@@ -1,13 +1,15 @@
 Markdown
-# 🚆 German Transit Reliability vs. Municipal Accessibility Infrastructure
+# 🚆 German Transit Reliability & Accessibility Analytics
 
-An end-to-end Data Science project analyzing the statistical relationship between regional train punctuality (*Deutsche Bahn*) and municipal disabled parking infrastructure across key cities in Schleswig-Holstein and Hamburg, utilizing open public data from **GovData.de**.
+An end-to-end Data Science and Machine Learning project analyzing the relationship between regional train punctuality (*Deutsche Bahn*) and municipal disabled parking infrastructure across key cities in Schleswig-Holstein and Hamburg, utilizing open public data from **GovData.de**.
 
 ---
 
 ## 📌 Executive Summary
 
-Urban mobility for individuals with reduced mobility depends on a seamless intermodal experience. This project combines transit reliability metrics with accessibility infrastructure data to evaluate whether cities with higher rail punctuality also provide stronger physical accessibility support.
+Urban mobility for individuals with reduced mobility depends on a seamless intermodal experience. This project combines transit reliability metrics with accessibility infrastructure data to evaluate whether cities with higher rail punctuality also provide stronger physical accessibility support. 
+
+Additionally, a **Time-Series Machine Learning model** was deployed to predict future train punctuality rates, enabling proactive infrastructure and service planning.
 
 ---
 
@@ -27,37 +29,52 @@ Urban mobility for individuals with reduced mobility depends on a seamless inter
 Data Cleaning & Regex     Data Aggregation & Regex
 City Normalization        Capacity Normalization
 │                           │
-└─────────────┬─────────────┘
+├───────────────────────────┘
 │
-▼
-┌───────────────────────┐
-│  df_insight (Merged)  │
-└───────────┬───────────┘
-│
-▼
-┌───────────────────────┐
-│ Statistical Analysis  │
-│  - Pearson (Linear)   │
-│  - Spearman (Rank)    │
-└───────────┬───────────┘
-│
-┌─────────────┴─────────────┐
+├───────────────────────────┐
 ▼                           ▼
-┌─────────────────────────┐  ┌───────────────────────┐
-│ correlation_analysis.png│  │ processed_data.csv    │
-└─────────────────────────┘  └───────────────────────┘
+┌───────────────────────┐   ┌───────────────────────┐
+│ Correlation Analysis  │   │ Time Series Feature   │
+│ (Pearson & Spearman)  │   │ Engineering (Lags/Roll)│
+└───────────┬───────────┘   └───────────┬───────────┘
+│                           │
+▼                           ▼
+┌───────────────────────┐   ┌───────────────────────┐
+│ correlation_analysis  │   │ Random Forest Model   │
+│        (.png)         │   │ (MAE: 2.30% | RMSE)   │
+└───────────────────────┘   └───────────┬───────────┘
+│
+▼
+┌───────────────────────┐
+│  punctuality_forecast │
+│        (.png)         │
+└───────────────────────┘
 
 
 ---
 
 ## 📊 Key Findings & Visualizations
 
-The correlation analysis compares the average rail punctuality percentage (`avg_punctuality_pct`) against total municipal disabled parking capacity (`total_disabled_parking_spaces`).
+### 1. Statistical Correlation Analysis
+Evaluates the relationship between average rail punctuality (`avg_punctuality_pct`) and total municipal disabled parking capacity (`total_disabled_parking_spaces`).
 
-* **Pearson Correlation ($r$):** Evaluates linear association between punctuality and capacity.
-* **Spearman Correlation ($\rho$):** Evaluates rank-order monotonic consistency among municipalities.
+* **Pearson Correlation ($r$):** Assesses linear association between train punctuality and accessibility capacity.
+* **Spearman Correlation ($\rho$):** Assesses rank-order consistency among target municipalities.
 
 ![Correlation Analysis](correlation_analysis.png)
+
+---
+
+### 2. Machine Learning: Punctuality Forecasting
+To move from descriptive analytics to predictive insights, a **Random Forest Regressor** time-series forecasting pipeline was implemented to predict future Deutsche Bahn punctuality rates.
+
+* **Feature Engineering:** Historical lag features ($t-1$, $t-2$) and 3-month rolling averages (`rolling_mean_3`).
+* **Validation Strategy:** Sequential time-based split (80% Train / 20% Test) to strictly prevent data leakage.
+* **Model Performance:**
+  * **MAE (Mean Absolute Error):** `2.30%` (The model predicts monthly punctuality rates with an average error of ~2.3 percentage points).
+  * **RMSE (Root Mean Squared Error):** `2.73%`
+
+![Punctuality Forecast](punctuality_forecast.png)
 
 ---
 
@@ -65,24 +82,22 @@ The correlation analysis compares the average rail punctuality percentage (`avg_
 
 ```text
 ├── data/
-│   ├── raw/                        # Raw downloads from GovData.de
-│   └── processed_transport_accessibility.csv  # Final aggregated dataset
+│   ├── raw/                                  # Raw datasets from GovData.de
+│   └── processed_transport_accessibility.csv # Aggregated and cleaned output
 ├── outputs/
-│   └── correlation_analysis.png    # High-res correlation plot
-├── pipeline.py                     # Modular ETL and analysis script
-├── notebook.ipynb                 # Exploratory Data Analysis (EDA)
-└── README.md                      # Documentation
+│   ├── correlation_analysis.png              # Scatter plot & correlation heatmap
+│   └── punctuality_forecast.png              # Time-series ML model forecast
+├── pipeline.py                               # End-to-end automated Python script
+├── notebook.ipynb                           # Exploratory Data Analysis (EDA) & Model tuning
+└── README.md                                 # Project documentation
 🚀 How to Run
 Clone the repository:
 
 Bash
 git clone [https://github.com/your-username/german-transit-accessibility.git](https://github.com/your-username/german-transit-accessibility.git)
 cd german-transit-accessibility
-Install dependencies:
+Install required dependencies:
 
 Bash
-pip install pandas numpy matplotlib seaborn scipy
-Execute the automated pipeline:
+pip install pandas numpy matplotlib seaborn scipy scikit-learn
 
-Bash
-python pipeline.py
