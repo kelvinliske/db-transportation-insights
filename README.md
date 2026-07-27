@@ -1,41 +1,88 @@
-# 🚆 German Transport & Municipal Accessibility Analysis
+Markdown
+# 🚆 German Transit Reliability vs. Municipal Accessibility Infrastructure
 
-An end-to-end data integration and analysis project evaluating the relationship between regional train punctuality (**Deutsche Bahn**) and municipal accessible parking infrastructure in Germany.
-
----
-
-## 📌 Project Overview
-This project explores whether cities experiencing lower public transport reliability compensate with stronger municipal accessibility infrastructure (disabled parking spaces), or if infrastructural gaps exist simultaneously in both public transit and accessibility provisions.
+An end-to-end Data Science project analyzing the statistical relationship between regional train punctuality (*Deutsche Bahn*) and municipal disabled parking infrastructure across key cities in Schleswig-Holstein and Hamburg, utilizing open public data from **GovData.de**.
 
 ---
 
-## 📊 Data Sources
+## 📌 Executive Summary
 
-The datasets used in this project were retrieved directly from the official German Open Data Portal:
-
-* **Portal:** [GovData — Das Datenportal für Deutschland](https://www.govdata.de/)
-  1. **DB Transport Punctuality (`puenktlichkeit.csv`):** Historical punctuality levels (`puenktlichkeitsniveau_an`) for regional train lines across Germany (2010–2022).
-  2. **Accessible Parking Infrastructure (`behindertenparken.csv`):** Spatial and municipal data on disabled parking spaces (`behindertenparken`), including capacity and location details.
+Urban mobility for individuals with reduced mobility depends on a seamless intermodal experience. This project combines transit reliability metrics with accessibility infrastructure data to evaluate whether cities with higher rail punctuality also provide stronger physical accessibility support.
 
 ---
 
-## 🛠️ Data Pipeline & Methodology
-- **Data Cleaning & Standardization:** Handled missing values, standardized city naming conventions, and cleaned numeric formats.
-- **Pattern Matching Merge:** Developed a keyword extraction algorithm (`re.escape` string matching) to link train line route destinations (`linie`) with specific municipality records (`city`).
-- **Data Aggregation:** Computed average punctuality rates per city against total accessibility capacities and parking facility counts.
+## 🛠️ Data Architecture & Pipeline
+
+           ┌───────────────────────┐
+           │   GovData.de Portal   │
+           └───────────┬───────────┘
+                       │
+         ┌─────────────┴─────────────┐
+         ▼                           ▼
+┌───────────────────┐       ┌───────────────────┐
+│ DB Train Datasets │       │ Parking Facilities│
+└─────────┬─────────┘       └─────────┬─────────┘
+│                           │
+▼                           ▼
+Data Cleaning & Regex     Data Aggregation & Regex
+City Normalization        Capacity Normalization
+│                           │
+└─────────────┬─────────────┘
+│
+▼
+┌───────────────────────┐
+│  df_insight (Merged)  │
+└───────────┬───────────┘
+│
+▼
+┌───────────────────────┐
+│ Statistical Analysis  │
+│  - Pearson (Linear)   │
+│  - Spearman (Rank)    │
+└───────────┬───────────┘
+│
+┌─────────────┴─────────────┐
+▼                           ▼
+┌─────────────────────────┐  ┌───────────────────────┐
+│ correlation_analysis.png│  │ processed_data.csv    │
+└─────────────────────────┘  └───────────────────────┘
+
 
 ---
 
-## 📈 Key Findings (Work in Progress)
-* **High Efficiency Corridors:** Cities like **Elmshorn** demonstrate high rail punctuality (~99.09%).
-* **Major Transit Hubs:** Metropolitan hubs like **Hamburg** centralize accessibility capacity (220+ registered disabled parking spaces) while maintaining moderate punctuality levels (~88.48%).
-* **Identified Gaps:** Outlying regional destinations like **Flensburg** show opportunities for both transit reliability improvement (~86.59%) and accessibility footprint expansion.
+## 📊 Key Findings & Visualizations
+
+The correlation analysis compares the average rail punctuality percentage (`avg_punctuality_pct`) against total municipal disabled parking capacity (`total_disabled_parking_spaces`).
+
+* **Pearson Correlation ($r$):** Evaluates linear association between punctuality and capacity.
+* **Spearman Correlation ($\rho$):** Evaluates rank-order monotonic consistency among municipalities.
+
+![Correlation Analysis](correlation_analysis.png)
 
 ---
 
-## 🚀 Next Steps
-- [x] Data Collection & Cleaning
-- [x] Cross-Dataset Matching Algorithm
-- [ ] Statistical Correlation Analysis (Pearson / Spearman)
-- [ ] Data Visualizations (Seaborn / Matplotlib)
-- [ ] Business Insights & Executive Summary
+## 📁 Repository Structure
+
+```text
+├── data/
+│   ├── raw/                        # Raw downloads from GovData.de
+│   └── processed_transport_accessibility.csv  # Final aggregated dataset
+├── outputs/
+│   └── correlation_analysis.png    # High-res correlation plot
+├── pipeline.py                     # Modular ETL and analysis script
+├── notebook.ipynb                 # Exploratory Data Analysis (EDA)
+└── README.md                      # Documentation
+🚀 How to Run
+Clone the repository:
+
+Bash
+git clone [https://github.com/your-username/german-transit-accessibility.git](https://github.com/your-username/german-transit-accessibility.git)
+cd german-transit-accessibility
+Install dependencies:
+
+Bash
+pip install pandas numpy matplotlib seaborn scipy
+Execute the automated pipeline:
+
+Bash
+python pipeline.py
